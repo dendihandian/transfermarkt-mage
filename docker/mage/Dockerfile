@@ -4,9 +4,9 @@ RUN mkdir -p /opt/mage/app
 
 COPY transfermarkt/ /opt/mage/app/
 
-RUN pip install mage-ai
-
 WORKDIR /opt/mage/app
+
+RUN pip install -r requirements.txt
 
 EXPOSE 6789
 
