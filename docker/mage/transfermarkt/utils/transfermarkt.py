@@ -8,7 +8,25 @@ import json
 transfermarkt_url = 'https://www.transfermarkt.com'
 request_headers = {'user-agent': 'transfermarkt-mage'}
 
-def parse_transfers(html_soup, transfers_date):
+def soup_prettify(soup):
+    print(soup.prettify())
+
+def get_soup_attr(soup, attr):
+    try:
+        return soup.string if attr == 'string' else soup[attr]
+    except:
+        return None
+
+def nested_find(soup, elements):
+    for element, index in elements:
+        try:
+            soup = soup.find_all(element, recursive=False)[index]
+        except:
+            soup = None
+            break
+    return soup
+
+def parse_transfers(html_soup, transfer_date):
 
     # parse to get list of transfers
     transfers_soups = html_soup.find('div', class_='responsive-table').find('div', id="yw1", class_='grid-view').find('table', class_='items').find('tbody')
@@ -18,19 +36,47 @@ def parse_transfers(html_soup, transfers_date):
     transfers = []
     for transfer_soup in transfers_soups:
 
+        # NOTE: when navigating down in bs4, some <tbody> element are missing in the soup and we're skipping them.
+
         # column 1
-        player_id = transfer_soup.find_all('td', recursive=False)[0].find('table', class_='inline-table').find_all('tr')[0].find_all('td', recursive=False)[1].find('a')['href'].split('/')[-1]
-        name = transfer_soup.find_all('td', recursive=False)[0].find('table', class_='inline-table').find_all('tr')[0].find_all('td', recursive=False)[1].find('a').string
-        portrait_url = transfer_soup.find_all('td', recursive=False)[0].find('table', class_='inline-table').find_all('tr')[0].find_all('td', recursive=False)[0].find('img')['data-src']
-        position = transfer_soup.find_all('td', recursive=False)[0].find('table', class_='inline-table').find_all('tr')[1].find_all('td', recursive=False)[0].string
+        player_id                       = get_soup_attr(nested_find(transfer_soup,[('td',0), ('table',0), ('tr',0), ('td',1),('a', 0)]), 'href').split('/')[-1]
+        name                            = get_soup_attr(nested_find(transfer_soup,[('td',0), ('table',0), ('tr',0), ('td',1),('a', 0)]), 'string')
+        portrait_url                    = get_soup_attr(nested_find(transfer_soup,[('td',0), ('table',0), ('tr',0), ('td',0), ('img', 0)]), 'data-src')
+        position                        = get_soup_attr(nested_find(transfer_soup,[('td',0), ('table',0), ('tr',1), ('td',0)]), 'string')
 
         # column 2
-        age = transfer_soup.find_all('td', recursive=False)[1].string
+        age                             = get_soup_attr(nested_find(transfer_soup, [('td', 1)]), 'string')
 
         # column 3
         nationalities = []
-        for img in transfer_soup.find_all('td', recursive=False)[2].find_all('img', recursive=False):
+        for img in nested_find(transfer_soup, [('td', 2)]).find_all('img', recursive=False):
             nationalities.append({'name': img['title'], 'url': img['src']})
+
+        # column 4
+        left_club_url                   = get_soup_attr(nested_find(transfer_soup, [('td', 3), ('table', 0), ('tr', 0), ('td', 0), ('a', 0), ('img', 0)]),'src')
+        left_club_name                  = get_soup_attr(nested_find(transfer_soup, [('td', 3), ('table', 0), ('tr', 0), ('td', 1), ('a', 0)]), 'string')
+        left_club_name_alt              = get_soup_attr(nested_find(transfer_soup, [('td', 3), ('table', 0), ('tr', 0), ('td', 1), ('a', 0)]), 'title')
+        left_club_league_country_url    = get_soup_attr(nested_find(transfer_soup, [('td', 3), ('table', 0), ('tr', 1), ('td', 0), ('img', 0)]), 'src')
+        left_club_league_country_name   = get_soup_attr(nested_find(transfer_soup, [('td', 3), ('table', 0), ('tr', 1), ('td', 0), ('img', 0)]), 'title')
+        left_club_league_name           = get_soup_attr(nested_find(transfer_soup, [('td', 3), ('table', 0), ('tr', 1), ('td', 0), ('a', 0)]), 'string')
+        left_club_league_name_alt       = get_soup_attr(nested_find(transfer_soup, [('td', 3), ('table', 0), ('tr', 1), ('td', 0), ('a', 0)]), 'title')
+
+        # column 5
+        join_club_url                   = get_soup_attr(nested_find(transfer_soup, [('td', 4), ('table', 0), ('tr', 0), ('td', 0), ('a', 0), ('img', 0)]),'src')
+        join_club_name                  = get_soup_attr(nested_find(transfer_soup, [('td', 4), ('table', 0), ('tr', 0), ('td', 1), ('a', 0)]), 'string')
+        join_club_name_alt              = get_soup_attr(nested_find(transfer_soup, [('td', 4), ('table', 0), ('tr', 0), ('td', 1), ('a', 0)]), 'title')
+        join_club_league_country_url    = get_soup_attr(nested_find(transfer_soup, [('td', 4), ('table', 0), ('tr', 1), ('td', 0), ('img', 0)]), 'src')
+        join_club_league_country_name   = get_soup_attr(nested_find(transfer_soup, [('td', 4), ('table', 0), ('tr', 1), ('td', 0), ('img', 0)]), 'title')
+        join_club_league_name           = get_soup_attr(nested_find(transfer_soup, [('td', 4), ('table', 0), ('tr', 1), ('td', 0), ('a', 0)]), 'string')
+        join_club_league_name_alt       = get_soup_attr(nested_find(transfer_soup, [('td', 4), ('table', 0), ('tr', 1), ('td', 0), ('a', 0)]), 'title')
+
+        # column 6
+        market_value                    = get_soup_attr(nested_find(transfer_soup, [('td', 5)]), 'string')
+
+        # column 7
+        fee                             = get_soup_attr(nested_find(transfer_soup, [('td', 6), ('a', 0)]), 'string')
+        loan_fee                        = get_soup_attr(nested_find(transfer_soup, [('td', 6), ('a', 0), ('i', 0)]), 'string')
+        transfer_url                    = get_soup_attr(nested_find(transfer_soup, [('td', 6), ('a', 0)]), 'href')
 
         # wrap transfer into dict and enlist
         transfers.append({
@@ -40,7 +86,25 @@ def parse_transfers(html_soup, transfers_date):
             'position': str(position),
             'age': age,
             'nationalities': nationalities,
-            'transfer_date': transfers_date,
+            'left_club_url': left_club_url,
+            'left_club_name': left_club_name,
+            'left_club_name_alt': left_club_name_alt,
+            'left_club_league_country_url': left_club_league_country_url,
+            'left_club_league_country_name': left_club_league_country_name,
+            'left_club_league_name': left_club_league_name,
+            'left_club_league_name_alt': left_club_league_name_alt,
+            'join_club_url': join_club_url,
+            'join_club_name': join_club_name,
+            'join_club_name_alt': join_club_name_alt,
+            'join_club_league_country_url': join_club_league_country_url,
+            'join_club_league_country_name': join_club_league_country_name,
+            'join_club_league_name': join_club_league_name,
+            'join_club_league_name_alt': join_club_league_name_alt,
+            'market_value': market_value,
+            'fee': fee,
+            'loan_fee': loan_fee,
+            'transfer_url': transfer_url,
+            'transfer_date': transfer_date,
         })
 
     return transfers
@@ -71,10 +135,11 @@ def get_transfers_by_date(date=datetime.now().strftime("%Y-%m-%d"), page_start=1
         else:
             next_page = False
 
-    # write result into json file
+    # write transfers into json file
     with open(f'{date}.json', 'w') as outfile:
         outfile.write(json.dumps(transfers, indent=4, ensure_ascii=False))
 
 if True:
-    get_transfers_by_date('2023-02-03')
+    # get_transfers_by_date('2023-02-03')
+    get_transfers_by_date()
 
