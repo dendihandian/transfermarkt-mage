@@ -4,18 +4,20 @@ from requests import get
 from datetime import datetime
 import json
 
+# defined variables
 transfermarkt_url = 'https://www.transfermarkt.com'
 request_headers = {'user-agent': 'transfermarkt-mage'}
 
 def parse_transfers(html_soup, transfers_date):
+
     # parse to get list of transfers
     transfers_soups = html_soup.find('div', class_='responsive-table').find('div', id="yw1", class_='grid-view').find('table', class_='items').find('tbody')
+    transfers_soups = list(filter(lambda soup: type(soup) is Tag, transfers_soups)) # filter only bs4.element.Tag types
 
-    # filter only bs4.element.Tag types
-    transfers_soups = list(filter(lambda soup: type(soup) is Tag, transfers_soups))
-
+    # parse transfers
     transfers = []
     for transfer_soup in transfers_soups:
+
         # column 1
         player_id = transfer_soup.find_all('td', recursive=False)[0].find('table', class_='inline-table').find_all('tr')[0].find_all('td', recursive=False)[1].find('a')['href'].split('/')[-1]
         name = transfer_soup.find_all('td', recursive=False)[0].find('table', class_='inline-table').find_all('tr')[0].find_all('td', recursive=False)[1].find('a').string
@@ -45,24 +47,31 @@ def parse_transfers(html_soup, transfers_date):
 
 def get_transfers_by_date(date=datetime.now().strftime("%Y-%m-%d"), page_start=1):
 
+    # starting parameters
     path = f'/transfers/transfertagedetail/statistik/top/land_id_zu/0/land_id_ab/0/leihe//datum/{date}/sort//plus/1/page/{page_start}'
     next_page = True
 
+    # get transfers
     transfers = []
     while next_page:
+
+        # get transfer by date html string
         url = transfermarkt_url + path
         r = get(url, headers=request_headers)
 
+        # parse transfers html string
         html_soup = BeautifulSoup(r.text, 'html.parser')
         if html_soup:
             transfers = transfers + parse_transfers(html_soup, date)
 
+        # check for next page
         next_page_soup = html_soup.find('li', class_='tm-pagination__list-item tm-pagination__list-item--icon-next-page')
         if (next_page_soup):
             path = next_page_soup.find('a', class_='tm-pagination__link')['href']
         else:
             next_page = False
 
+    # write result into json file
     with open(f'{date}.json', 'w') as outfile:
         outfile.write(json.dumps(transfers, indent=4, ensure_ascii=False))
 
