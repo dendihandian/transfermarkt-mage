@@ -1,0 +1,11 @@
+version: '3'
+services:
+  mage:
+    build:
+      context: ./docker/mage
+    ports:
+      - 6789:6789
+    volumes:
+      - ./docker/mage/transfermarkt-pipeline:/opt/mage/app
+      - ~/.aws:/root/.aws
+      - ~/.mage_data:/root/.mage_data
