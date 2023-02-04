@@ -6,8 +6,8 @@ COPY transfermarkt/ /opt/mage/app/
 
 RUN pip install mage-ai
 
-WORKDIR /opt/mage/
+WORKDIR /opt/mage/app
 
 EXPOSE 6789
 
-ENTRYPOINT ["mage", "start", "app"]
+ENTRYPOINT ["mage", "start"]
