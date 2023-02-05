@@ -1,0 +1,36 @@
+blocks:
+- all_upstream_blocks_executed: true
+  configuration: {}
+  downstream_blocks:
+  - export_raw_transfers
+  executor_config: null
+  executor_type: local_python
+  language: python
+  name: load_yesterday_transfers
+  status: executed
+  type: data_loader
+  upstream_blocks: []
+  uuid: load_yesterday_transfers
+- all_upstream_blocks_executed: true
+  configuration:
+    data_provider: postgres
+    data_provider_profile: default
+    data_provider_schema: public
+    data_provider_table: raw_transfers
+    export_write_policy: append
+    use_raw_sql: false
+  downstream_blocks: []
+  executor_config: null
+  executor_type: local_python
+  language: sql
+  name: export_raw_transfers
+  status: failed
+  type: data_exporter
+  upstream_blocks:
+  - load_yesterday_transfers
+  uuid: export_raw_transfers
+data_integration: null
+name: transfermarkt_transfers_daily_pipeline
+type: python
+uuid: transfermarkt_transfers_daily_pipeline
+widgets: []

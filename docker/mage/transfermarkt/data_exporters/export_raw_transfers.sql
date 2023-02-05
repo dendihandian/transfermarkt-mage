@@ -1,0 +1,1 @@
+INSERT INTO raw_transfers VALUES SELECT * FROM {{ df_1 }}
