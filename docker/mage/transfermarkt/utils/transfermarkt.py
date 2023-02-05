@@ -135,11 +135,4 @@ def get_transfers_by_date(date=datetime.now().strftime("%Y-%m-%d"), page_start=1
         else:
             next_page = False
 
-    # write transfers into json file
-    with open(f'{date}.json', 'w') as outfile:
-        outfile.write(json.dumps(transfers, indent=4, ensure_ascii=False))
-
-if True:
-    # get_transfers_by_date('2023-02-03')
-    get_transfers_by_date()
-
+    return transfers
