@@ -17,7 +17,7 @@ blocks:
     data_provider_profile: default
     data_provider_schema: public
     data_provider_table: raw_transfers
-    export_write_policy: replace
+    export_write_policy: append
     use_raw_sql: false
   downstream_blocks: []
   executor_config: null

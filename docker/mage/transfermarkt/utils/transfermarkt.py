@@ -110,10 +110,11 @@ def parse_transfers(html_soup, transfer_date):
 
     return transfers
 
-def get_transfers_by_date(date=datetime.now().strftime("%Y-%m-%d"), page_start=1):
+def get_transfers_by_date(date=datetime.now().strftime("%Y-%m-%d"), page_start=1, page_end=None):
 
     # starting parameters
-    path = f'/transfers/transfertagedetail/statistik/top/land_id_zu/0/land_id_ab/0/leihe//datum/{date}/sort//plus/1/page/{page_start}'
+    current_page = page_start
+    path = f'/transfers/transfertagedetail/statistik/top/land_id_zu/0/land_id_ab/0/leihe//datum/{date}/sort//plus/1/page/{current_page}'
     next_page = True
 
     # get transfers
@@ -129,11 +130,19 @@ def get_transfers_by_date(date=datetime.now().strftime("%Y-%m-%d"), page_start=1
         if html_soup:
             transfers = transfers + parse_transfers(html_soup, date)
 
-        # check for next page
-        next_page_soup = html_soup.find('li', class_='tm-pagination__list-item tm-pagination__list-item--icon-next-page')
-        if (next_page_soup):
-            path = next_page_soup.find('a', class_='tm-pagination__link')['href']
+        if page_end is not None:
+            # check for next page
+            next_page_soup = html_soup.find('li', class_='tm-pagination__list-item tm-pagination__list-item--icon-next-page')
+            if (next_page_soup):
+                path = next_page_soup.find('a', class_='tm-pagination__link')['href']
+            else:
+                next_page = False
         else:
-            next_page = False
+            # check for page_end
+            if current_page > page_end:
+                next_page = False
+            else:
+                current_page = current_page + 1
+                path = f'/transfers/transfertagedetail/statistik/top/land_id_zu/0/land_id_ab/0/leihe//datum/{date}/sort//plus/1/page/{current_page}'
 
     return transfers
