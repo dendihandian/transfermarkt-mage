@@ -139,7 +139,7 @@ def get_transfers_by_date(date=datetime.now().strftime("%Y-%m-%d"), page_start=1
         if html_soup:
             transfers = transfers + parse_transfers(html_soup, date)
 
-        if page_end is not None:
+        if page_end is None:
 
             # check for next page
             next_page_soup = html_soup.find('li', class_='tm-pagination__list-item tm-pagination__list-item--icon-next-page')
