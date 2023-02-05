@@ -3,6 +3,7 @@ from bs4.element import Tag
 from requests import get
 from datetime import datetime
 import json
+import logging
 
 # defined variables
 transfermarkt_url = 'https://www.transfermarkt.com'
@@ -125,24 +126,37 @@ def get_transfers_by_date(date=datetime.now().strftime("%Y-%m-%d"), page_start=1
         url = transfermarkt_url + path
         r = get(url, headers=request_headers)
 
-        # parse transfers html string
+        # html string into html_soup
         html_soup = BeautifulSoup(r.text, 'html.parser')
+
+        # check the current_page is equal to the current web page number
+        # if they're not equal, break the loop
+        current_web_page_number = html_soup.find('li', class_='tm-pagination__list-item tm-pagination__list-item--active').find('a').string
+        if int(current_web_page_number) != int(current_page):
+            break
+
+        # get transfers data from html soup
         if html_soup:
             transfers = transfers + parse_transfers(html_soup, date)
 
         if page_end is not None:
+
             # check for next page
             next_page_soup = html_soup.find('li', class_='tm-pagination__list-item tm-pagination__list-item--icon-next-page')
             if (next_page_soup):
                 path = next_page_soup.find('a', class_='tm-pagination__link')['href']
+                current_page = int(path.split('/')[-1])
             else:
                 next_page = False
+
         else:
+
+            current_page = current_page + 1
+
             # check for page_end
             if current_page > page_end:
                 next_page = False
             else:
-                current_page = current_page + 1
                 path = f'/transfers/transfertagedetail/statistik/top/land_id_zu/0/land_id_ab/0/leihe//datum/{date}/sort//plus/1/page/{current_page}'
 
     return transfers
