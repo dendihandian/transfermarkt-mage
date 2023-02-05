@@ -1,8 +1,4 @@
-#!/bin/bash
-set -e
-
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-  CREATE TABLE IF NOT EXISTS public.raw_transfers (
+CREATE TABLE IF NOT EXISTS public.raw_transfers (
     player_id INT NOT NULL,
     transfer_date TIMESTAMP NOT NULL,
     name VARCHAR NULL,
@@ -28,5 +24,4 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     fee VARCHAR NULL,
     loan_fee VARCHAR NULL,
     transfer_url VARCHAR NULL
-  );
-EOSQL
+);

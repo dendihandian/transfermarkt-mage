@@ -1,7 +1,7 @@
 FROM postgres:15.1-alpine
 
-COPY init_db_tables.sh /docker-entrypoint-initdb.d/init_db_tables.sh
+COPY ./init.sql /docker-entrypoint-initdb.d/init.sql
 
-RUN chmod +x /docker-entrypoint-initdb.d/init_db_tables.sh
+RUN chmod +x /docker-entrypoint-initdb.d/init.sql
 
 EXPOSE 5432
