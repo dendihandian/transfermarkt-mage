@@ -17,14 +17,14 @@ blocks:
     data_provider_profile: default
     data_provider_schema: public
     data_provider_table: raw_transfers
-    export_write_policy: append
+    export_write_policy: replace
     use_raw_sql: false
   downstream_blocks: []
   executor_config: null
   executor_type: local_python
   language: sql
   name: export_raw_transfers
-  status: failed
+  status: executed
   type: data_exporter
   upstream_blocks:
   - load_yesterday_transfers

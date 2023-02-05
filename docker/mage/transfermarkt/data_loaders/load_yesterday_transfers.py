@@ -21,6 +21,7 @@ def load_yesterday_transfers(*args, **kwargs):
     transfers = get_transfers_by_date(yesterday.strftime('%Y-%m-%d'))
 
     df = DataFrame(transfers)
+    df.fillna('', inplace = True)
 
     return df
 
