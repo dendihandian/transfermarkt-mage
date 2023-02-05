@@ -105,6 +105,7 @@ def parse_transfers(html_soup, transfer_date):
             'loan_fee': loan_fee,
             'transfer_url': transfer_url,
             'transfer_date': transfer_date,
+            'ingested_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         })
 
     return transfers
